@@ -189,12 +189,22 @@ in {
         email = cfg.sslEmail;
         group = config.services.nginx.group;
       };
+
+      certs."www.${cfg.host}" = {
+        email = cfg.sslEmail;
+        group = config.services.nginx.group;
+      };
     };
 
     services = {
       nginx = lib.mkIf cfg.useNginx {
         enable = true;
         virtualHosts."${cfg.host}" = nginxHost;
+        virtualHosts."www.${cfg.host}" = {
+          forceSSL = true;
+          useACMEHost = "www.${cfg.host}";
+          globalRedirect = cfg.host;
+        };
       };
 
       postgresql = lib.mkIf cfg.useDb {
