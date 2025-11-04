@@ -111,6 +111,11 @@ in {
       default = true;
       description = "Enable postgres backend.";
     };
+    redirectWww = lib.mkOption {
+      type = lib.types.bool;
+      default = false;
+      description = "Redirect `www.${opt.host}` to `${opt.host}`. Ignored if `${opt.useNginx} is false.";
+    };
     sslEmail = lib.mkOption {
       type = lib.types.str;
       example = "someuser@example.com";
@@ -189,7 +194,7 @@ in {
         group = config.services.nginx.group;
       };
 
-      certs."www.${cfg.host}" = {
+      certs."www.${cfg.host}" = lib.mkIf cfg.redirectWww {
         email = cfg.sslEmail;
         group = config.services.nginx.group;
       };
@@ -199,7 +204,7 @@ in {
       nginx = lib.mkIf cfg.useNginx {
         enable = true;
         virtualHosts."${cfg.host}" = nginxHost;
-        virtualHosts."www.${cfg.host}" = {
+        virtualHosts."www.${cfg.host}" = lib.mkIf cfg.redirectWww {
           forceSSL = true;
           useACMEHost = "www.${cfg.host}";
           globalRedirect = cfg.host;
