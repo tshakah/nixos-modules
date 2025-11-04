@@ -93,7 +93,6 @@
         RELEASE_TMP = "/tmp/${serviceName}";
         ERL_CRASH_DUMP = "${dataDir}/erl_crash.dump";
         TZDATA_DIR = "${dataDir}/tzdata";
-        HOME = "${dataDir}";
       }
       // cfg.extraEnvironmentVars;
   };
