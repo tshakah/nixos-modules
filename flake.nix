@@ -17,9 +17,10 @@
     with inputs; let
       inherit (nixpkgs) lib;
       functions = import ./functions/strings.nix {inherit lib;};
-      elixirModule = import ./modules/elixir.nix {inherit functions lib;};
+      elixirPackage = ./modules/elixir_package.nix;
+      elixirService = import ./modules/elixir_service.nix {inherit functions lib;};
     in
-      {inherit functions elixirModule;}
+      {inherit functions elixirService elixirPackage;}
       // flake-utils.lib.eachDefaultSystem (
         system: let
           pkgs = import nixpkgs {inherit system;};
