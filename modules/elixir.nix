@@ -161,7 +161,8 @@ in {
     };
     extraSetup = lib.mkOption {
       type = lib.types.str;
-      description = "Any extra commands to add to the activation script. This is run immediately after `${opt.dataDir}` is created.";
+      description = "Any extra commands to add to the activation script. Run immediately after `${opt.dataDir}` is created.";
+      default = "";
     };
   };
 
