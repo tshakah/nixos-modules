@@ -248,7 +248,7 @@ in {
         mkdir -p ${dataDir}
         ${cfg.extraSetup}
         cp -r ${cfg.package}/lib/tzdata-*/priv/release_ets ${dataDir}/tzdata/
-        ln -sf ${wrapped} ${dataDir}/wrapped-emdash
+        ln -sf ${wrapped} ${dataDir}/wrapped_${serviceName}
         chown -R ${user}:${user} ${dataDir}
         chmod -R 700 ${dataDir}/tzdata
       '';
@@ -260,7 +260,7 @@ in {
         mkdir -p ${dataDir}/static
 
         cp -r ${cfg.package}/nginx ${dataDir}/
-        cp -r ${cfg.package}/lib/${serviceName}-*/priv/static ${dataDir}/
+        cp -r ${cfg.package}/lib/${cfg.package.meta.mainProgram}-*/priv/static ${dataDir}/
 
         chown -R ${user}:nginx ${dataDir}/nginx
         chown -R ${user}:nginx ${dataDir}/static
