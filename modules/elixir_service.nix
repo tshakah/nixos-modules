@@ -110,11 +110,6 @@ in {
       default = true;
       description = "Enable postgres backend.";
     };
-    redirectWww = lib.mkOption {
-      type = lib.types.bool;
-      default = false;
-      description = "Redirect `www.${opt.host}` to `${opt.host}`. Ignored if `${opt.useNginx} is false.";
-    };
     sslEmail = lib.mkOption {
       type = lib.types.str;
       example = "someuser@example.com";
@@ -128,6 +123,11 @@ in {
     host = lib.mkOption {
       type = lib.types.str;
       description = "The domain name for the ${serviceName} service.";
+    };
+    extraHosts = lib.mkOption {
+      type = with lib.types; listOf str;
+      description = "List of extra hosts to redirect to the main one, including with SSL";
+      default = [];
     };
     port = lib.mkOption {
       type = lib.types.port;
@@ -195,26 +195,29 @@ in {
 
     security.acme = lib.mkIf cfg.useNginx {
       defaults.webroot = "/var/lib/acme/acme-challenge/";
-      certs."${cfg.host}" = {
-        email = cfg.sslEmail;
-        group = config.services.nginx.group;
-      };
-
-      certs."www.${cfg.host}" = lib.mkIf cfg.redirectWww {
-        email = cfg.sslEmail;
-        group = config.services.nginx.group;
-      };
+      certs = builtins.listToAttrs (map (host: {
+        name = host;
+        value = {
+          email = cfg.sslEmail;
+          group = config.services.nginx.group;
+        };
+      }) (cfg.extraHosts ++ [cfg.host]));
     };
 
     services = {
       nginx = lib.mkIf cfg.useNginx {
         enable = true;
-        virtualHosts."${cfg.host}" = nginxHost;
-        virtualHosts."www.${cfg.host}" = lib.mkIf cfg.redirectWww {
-          forceSSL = true;
-          useACMEHost = "www.${cfg.host}";
-          globalRedirect = cfg.host;
-        };
+        virtualHosts =
+          (builtins.listToAttrs (map (host: {
+              name = host;
+              value = {
+                forceSSL = true;
+                useACMEHost = host;
+                globalRedirect = cfg.host;
+              };
+            })
+            cfg.extraHosts))
+          // {"${cfg.host}" = nginxHost;};
       };
 
       postgresql = lib.mkIf cfg.useDb {
