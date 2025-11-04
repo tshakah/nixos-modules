@@ -5,6 +5,7 @@
   binaryName ? name,
   preBuild ? "",
   postBuild ? null,
+  postInstall ? "",
   postUnpack ? "",
   ...
 }:
@@ -52,6 +53,8 @@ in
       '';
 
     postInstall = ''
+      ${postInstall}
+
       wrapProgram $out/bin/${binaryName} \
         --prefix PATH : ${
         lib.makeBinPath [
