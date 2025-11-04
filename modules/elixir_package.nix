@@ -4,12 +4,12 @@
   src,
   binaryName ? name,
   preBuild ? "",
+  postBuild ? null,
+  postUnpack ? "",
   ...
 }:
-
 with pkgs;
-with beamPackages;
-let
+with beamPackages; let
   mixNixDeps = import "${src}/deps.nix" {
     inherit beamPackages lib pkgs;
   };
@@ -20,7 +20,7 @@ let
   '';
 in
   mixRelease {
-    inherit mixNixDeps version preBuild;
+    inherit mixNixDeps version preBuild postUnpack;
 
     pname = name;
     src = src;
@@ -28,25 +28,28 @@ in
     PRECOMPILED_NIF = true;
     stripDebug = true;
 
-    postBuild = ''
-      tailwind_path="$(mix do \
-        app.config --no-deps-check --no-compile, \
-        eval 'Tailwind.bin_path() |> IO.puts()')"
-      esbuild_path="$(mix do \
-        app.config --no-deps-check --no-compile, \
-        eval 'Esbuild.bin_path() |> IO.puts()')"
+    postBuild =
+      if postBuild != null
+      then postBuild
+      else ''
+        tailwind_path="$(mix do \
+          app.config --no-deps-check --no-compile, \
+          eval 'Tailwind.bin_path() |> IO.puts()')"
+        esbuild_path="$(mix do \
+          app.config --no-deps-check --no-compile, \
+          eval 'Esbuild.bin_path() |> IO.puts()')"
 
-      ln -sfv ${tailwindcss_4}/bin/tailwindcss "$tailwind_path"
-      ln -sfv ${esbuild}/bin/esbuild "$esbuild_path"
-      ln -sfv ${mixNixDeps.heroicons} deps/heroicons
+        ln -sfv ${tailwindcss_4}/bin/tailwindcss "$tailwind_path"
+        ln -sfv ${esbuild}/bin/esbuild "$esbuild_path"
+        ln -sfv ${mixNixDeps.heroicons} deps/heroicons
 
-      mix do \
-        app.config --no-deps-check --no-compile, \
-        assets.deploy --no-deps-check
+        mix do \
+          app.config --no-deps-check --no-compile, \
+          assets.deploy --no-deps-check
 
-      mkdir -p "$out/nginx"
-      cp nginx/* "$out/nginx/"
-    '';
+        mkdir -p "$out/nginx"
+        cp nginx/* "$out/nginx/"
+      '';
 
     postInstall = ''
       wrapProgram $out/bin/${binaryName} \

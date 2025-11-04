@@ -163,6 +163,12 @@ in {
       description = "Any extra commands to add to the activation script. Run immediately after `${opt.dataDir}` is created.";
       default = "";
     };
+    extraPackages = lib.mkOption {
+      type = with lib.types; listOf (oneOf [package str]);
+      description = "List of extra packages to include in the service PATH.";
+      example = "[pkgs.texlive.combined.scheme-small unstable.imagemagick]";
+      default = [];
+    };
   };
 
   config = lib.mkIf cfg.enable {
