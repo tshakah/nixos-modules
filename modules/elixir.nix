@@ -7,7 +7,6 @@
   ...
 }: let
   serviceName = functions.toSnakeCase name;
-  elixirModule = functions.toPascalCase name;
   cfg = config.services."${serviceName}";
   opt = options.services."${serviceName}";
   dataDir = cfg.dataDir;
@@ -75,7 +74,7 @@
       WorkingDirectory = "${dataDir}";
       ExecStartPre =
         if cfg.useDb
-        then ["${lib.getExe cfg.package} eval '${elixirModule}.Release.migrate()'"]
+        then ["${cfg.package}/bin/migrate"]
         else [];
       ExecStart = "${lib.getExe cfg.package} start";
       ExecStop = "${lib.getExe cfg.package} stop";
