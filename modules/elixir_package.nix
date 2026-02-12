@@ -21,10 +21,9 @@ with beamPackages; let
   '';
 in
   mixRelease {
-    inherit mixNixDeps version preBuild postUnpack;
+    inherit src mixNixDeps version preBuild postUnpack;
 
     pname = name;
-    src = src;
     meta.mainProgram = binaryName;
     PRECOMPILED_NIF = true;
     stripDebug = true;

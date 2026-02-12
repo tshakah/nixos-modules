@@ -53,6 +53,7 @@
   systemdService = {
     description = "${serviceName} systemd service";
     wantedBy = ["default.target"];
+    path = cfg.extraPackages;
     after =
       ["network.target"]
       ++ (
