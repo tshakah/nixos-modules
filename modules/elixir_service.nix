@@ -9,13 +9,11 @@
   serviceName = functions.toSnakeCase name;
   cfg = config.services."${serviceName}";
   opt = options.services."${serviceName}";
-  dataDir = cfg.dataDir;
-  user = cfg.user;
+  inherit (cfg) dataDir user;
 
   nginxHost = {
     forceSSL = true;
     useACMEHost = "${cfg.host}";
-    locations."/.well-known/".root = "/var/lib/acme/acme-challenge/";
 
     extraConfig = ''
       error_page 403 500 502 503 504 /50x.html;
@@ -29,24 +27,28 @@
       }
     '';
 
-    locations."~* ^.+\.(css|cur|gif|gz|ico|jpg|jpeg|js|png|svg|woff|woff2|webm)$" = {
-      extraConfig = ''
-        root ${dataDir}/static;
-        etag off;
-        expires max;
-        gzip on;
-        gzip_static on;
-        more_set_headers Cache-Control public, max-age=2419200, immutable;
-      '';
-    };
+    locations = {
+      "/.well-known/".root = "/var/lib/acme/acme-challenge/";
 
-    locations."/" = {
-      proxyPass = "http://localhost:${toString cfg.port}";
-      proxyWebsockets = true;
-      extraConfig = ''
-        proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection "Upgrade";
-      '';
+      "~* ^.+\.(css|cur|gif|gz|ico|jpg|jpeg|js|png|svg|woff|woff2|webm)$" = {
+        extraConfig = ''
+          root ${dataDir}/static;
+          etag off;
+          expires max;
+          gzip on;
+          gzip_static on;
+          more_set_headers Cache-Control public, max-age=2419200, immutable;
+        '';
+      };
+
+      "/" = {
+        proxyPass = "http://localhost:${toString cfg.port}";
+        proxyWebsockets = true;
+        extraConfig = ''
+          proxy_set_header Upgrade $http_upgrade;
+          proxy_set_header Connection "Upgrade";
+        '';
+      };
     };
   };
 
@@ -199,8 +201,8 @@ in {
       certs = builtins.listToAttrs (map (host: {
         name = host;
         value = {
+          inherit (config.services.nginx) group;
           email = cfg.sslEmail;
-          group = config.services.nginx.group;
         };
       }) (cfg.extraHosts ++ [cfg.host]));
     };
