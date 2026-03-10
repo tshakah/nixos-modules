@@ -11,9 +11,7 @@
 }:
 with pkgs;
 with beamPackages; let
-  mixNixDeps = import "${src}/deps.nix" {
-    inherit beamPackages lib pkgs;
-  };
+  mixNixDeps = pkgs.callPackages "${src}/deps.nix" {};
 
   version = runCommand "get-rev" {} ''
     cd ${src}
