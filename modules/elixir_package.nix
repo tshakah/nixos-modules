@@ -7,6 +7,7 @@
   postBuild ? null,
   postInstall ? "",
   postUnpack ? "",
+  beamPackages ? pkgs.beamPackages,
   ...
 }:
 with pkgs;
