@@ -173,6 +173,17 @@ in {
       example = "[pkgs.texlive.combined.scheme-small unstable.imagemagick]";
       default = [];
     };
+    extraStaticWritableDirs = lib.mkOption {
+      type = with lib.types; listOf str;
+      description = ''
+        Paths, relative to `${opt.dataDir}/static`, that the running service writes
+        to at runtime (e.g. uploaded or generated images). `${opt.dataDir}/static`
+        is copied from the read-only Nix store on every deploy, so these paths need
+        the write bit restored afterwards or writes to them will fail with EACCES.
+      '';
+      example = ["images/barcodes"];
+      default = [];
+    };
   };
 
   config = lib.mkIf cfg.enable {
@@ -270,6 +281,13 @@ in {
         chown -R ${user}:nginx ${dataDir}/static
 
         chmod -R 550 ${dataDir}/nginx
+
+        ${lib.concatMapStringsSep "\n" (d: ''
+          mkdir -p ${dataDir}/static/${d}
+          chown -R ${user}:nginx ${dataDir}/static/${d}
+          chmod -R u+rwX ${dataDir}/static/${d}
+        '')
+        cfg.extraStaticWritableDirs}
       '';
       deps = [];
     };
