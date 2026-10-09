@@ -40,7 +40,7 @@ in
 
         ln -sfv ${tailwindcss_4}/bin/tailwindcss "$tailwind_path"
         ln -sfv ${esbuild}/bin/esbuild "$esbuild_path"
-        ln -sfv ${mixNixDeps.heroicons} deps/heroicons
+        ln -sfvn ${mixNixDeps.heroicons} deps/heroicons
 
         mix do \
           app.config --no-deps-check --no-compile, \
